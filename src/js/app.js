@@ -7,7 +7,7 @@ var Voice = require('ui/voice');
 var Vibe = require('ui/vibe');
 var Discord = require('d4p.js');
 var Menufy = require('menufy.js');
-var token = "token here m8";
+var token = "token here pls";
 
 var client = new Discord.Client({debug: true});
 var menufy = new Menufy.er();
@@ -42,6 +42,7 @@ channelMessages.on('longSelect', function(e) {
       return;
     }
 
+    client.sendMessage(e.transcription, currentChannel);
     console.log('Success: ' + e.transcription);
   });
 });

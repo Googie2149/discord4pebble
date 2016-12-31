@@ -23,6 +23,8 @@ module.exports.Client = function(opt) {
 	
 	var socket = new WebSocket("wss://gateway.discord.gg/?v=5&encoding=json");
 	var api = 'https://discordapp.com/api';
+  
+  var token = '';
 	
 	//FIND THINGS
 	//because I'm too lazy to add collections like discord.js
@@ -70,7 +72,7 @@ module.exports.Client = function(opt) {
 	//If they didn't write the socket stuff I'd probably be lazy and never make this
 	
 	this.login = function(userToken) {
-		var token = userToken;
+		token = userToken;
 		
 		socket.onopen = function(event) {
 			if (options.debug) console.log('SOCKET OPEN');
@@ -272,18 +274,40 @@ module.exports.Client = function(opt) {
 	 * callback => Function, Function to call once a response it received
 	 * jsonData => Object  , JSON data to send to Discord
 	 */
-	
-	var httpApi = this.httpApi = function(method, url, callback, jsonData) {
-		if (jsonData === undefined) jsonData = '';
-		ajax({
-			url: api + url,
-			method: method,
-			type: 'json',
-			data: jsonData,
-			headers: {'User-Agent': 'Pebble-Discord (https://github.com/AtlasTheBot/Pebble-Discord, 0.0001)',
-								'Authorization': 'Bearer ' + this.token}
-		}, function(data) {
-			if (typeof callback === 'function') callback(data);
-		});
+  
+function generateMessage(message) {
+	return {
+		 content: String(message),
+		 nonce: Math.floor(Math.random() * Number.MAX_SAFE_INTEGER)
 	};
+}
+
+this.sendMessage = function sendMessage(input, id) {
+  var message = generateMessage(input);
+  this.httpApi('POST', '/channels/' + id + '/messages', '', message);
 };
+  
+this.httpApi = function httpApi(method, endpoint, callback, data) {
+  try {
+	if (data === undefined) data = '';
+    
+  var xhr = new XMLHttpRequest();
+  var url = api + endpoint;
+  xhr.open(method, url, true);
+  xhr.setRequestHeader('Authorization', token);
+  xhr.setRequestHeader('Content-type', 'application/json');
+  xhr.onreadystatechange = function () { 
+    
+        console.log(xhr.responseText);
+    
+  };
+    
+  xhr.send(JSON.stringify(data));
+  }
+  catch (err) { console.log(check(err)); }
+  };
+};
+
+function check(o) { //I'm lazy
+	return JSON.stringify(o, null, 2);
+}
